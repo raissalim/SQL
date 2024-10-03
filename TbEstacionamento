@@ -1,0 +1,31 @@
+CREATE DATABASE bdEstacionamento 
+USE bdEstacionamento
+DROP DATABASE bdEstacionamento
+GO
+
+CREATE TABLE tbMotorista(
+	idMotorista INT PRIMARY KEY IDENTITY (1,1),
+	nomeMotorista VARCHAR(60),
+	dataNascimentoMotorista DATE,
+	cpfMotorista VARCHAR (14),                 
+	CNHMotorista VARCHAR(60),
+	pontuacaoAcumulada INT
+
+)
+
+CREATE TABLE tbVeiculo(
+idVeiculo INT PRIMARY KEY IDENTITY (1,1)
+,modeloVeiculo VARCHAR (60)
+,placaVeiculo VARCHAR(60)
+,renavamVeiculo VARCHAR(60)
+,anoVeiculo DATE 
+,idMotorista INT FOREIGN KEY REFERENCES tbMotorista(idMotorista)
+)
+
+CREATE TABLE tbMultas(
+idMulta  INT PRIMARY KEY IDENTITY (1,1),
+dataMulta DATE,
+horaMulta TIME,
+pontosMulta INT,
+idVeiculo  INT FOREIGN KEY REFERENCES tbVeiculo(idVeiculo)
+)
