@@ -1,0 +1,159 @@
+CREATE DATABASE bdEcommerce 
+USE bdEcommerce
+
+CREATE TABLE tbCliente (
+   idCliente INT PRIMARY KEY IDENTITY(1,1),
+   nomeCliente VARCHAR(50),
+   datanasc DATE,
+   cpfCliente VARCHAR(11) -- Corrigido para o tamanho correto do CPF
+);
+GO
+
+-- Tabela tbEndereco
+CREATE TABLE tbEndereco (
+   idEndereco INT PRIMARY KEY IDENTITY(1,1),
+   logradouro VARCHAR(50),
+   cep VARCHAR(9),
+   cidade VARCHAR(50),
+   estado VARCHAR(30),
+   numeroResidencial VARCHAR(10), -- Corrigido para evitar nome de coluna reservado
+   complemento VARCHAR(5),
+   pais VARCHAR(30),
+   idCliente INT,
+   CONSTRAINT FK_Endereco_Cliente FOREIGN KEY (idCliente) REFERENCES tbCliente(idCliente)
+);
+GO
+
+-- Tabela tbCategoria
+CREATE TABLE tbCategoria (
+   idCategoria INT PRIMARY KEY IDENTITY(1,1),
+   nomeCategoria VARCHAR(50)
+);
+GO
+
+-- Tabela tbProduto
+CREATE TABLE tbProduto (
+   idProduto INT PRIMARY KEY IDENTITY(1,1),
+   nomeProduto VARCHAR(50),
+   descProduto TEXT,
+   idCategoria INT,
+   CONSTRAINT FK_Produto_Categoria FOREIGN KEY (idCategoria) REFERENCES tbCategoria(idCategoria),
+   quantProduto DECIMAL(10,2),
+   valorProduto DECIMAL(10,2), -- Alterado de REAL para DECIMAL para garantir maior precisão
+   dataCadastro DATETIME DEFAULT GETDATE(),
+   ativo BIT DEFAULT 1
+);
+GO
+
+-- Tabela tbPedido
+CREATE TABLE tbPedido (
+   idPedido INT PRIMARY KEY IDENTITY(1,1),
+   idCliente INT,
+   idEndereco INT,
+   dataPedido DATETIME DEFAULT GETDATE(),
+   CONSTRAINT FK_Pedido_Cliente FOREIGN KEY (idCliente) REFERENCES tbCliente(idCliente),
+   CONSTRAINT FK_Pedido_Endereco FOREIGN KEY (idEndereco) REFERENCES tbEndereco(idEndereco)
+);
+GO
+
+-- Tabela tbItemPedido
+CREATE TABLE tbItemPedido (
+   idItemPedido INT PRIMARY KEY IDENTITY(1,1),
+   idPedido INT,
+   idProduto INT,
+   quantidade DECIMAL(10,2),
+   precoUnitario DECIMAL(10,2),
+   CONSTRAINT FK_ItemPedido_Pedido FOREIGN KEY (idPedido) REFERENCES tbPedido(idPedido),
+   CONSTRAINT FK_ItemPedido_Produto FOREIGN KEY (idProduto) REFERENCES tbProduto(idProduto)
+);
+GO
+SELECT* FROM tbCliente
+SELECT* FROM tbCategoria
+SELECT* FROM tbEndereco
+SELECT* FROM tbProduto
+SELECT* FROM tbPedido
+SELECT quantidade, precoUnitario FROM tbItemPedido;
+
+ALTER TABLE tbEndereco
+ALTER COLUMN complemento VARCHAR(20); 
+
+INSERT INTO tbCliente (nomeCliente, datanasc, cpfCliente)
+VALUES ('Levi Benzecry', '2005-07-19', '12345678901');
+
+INSERT INTO tbCliente (nomeCliente, datanasc, cpfCliente)
+VALUES ('Levi Benzecry', '2005-07-19', '12345678901');
+
+
+-- Inserir outro cliente
+INSERT INTO tbCliente (nomeCliente, datanasc, cpfCliente)
+VALUES ('Raissa Mineiro', '2007-05-15', '1234567802');
+
+
+
+-- Inserir endereço para o cliente endereço levi
+INSERT INTO tbEndereco (
+   logradouro, cep, cidade, estado, numeroResidencial, complemento, pais, idCliente)
+VALUES (
+   'Rua das Flores', '12345-678', 'São Paulo', 'SP', '123', 'Apto 101', 'Brasil', 1);
+
+   -- Inserir endereço para o cliente endereço raissa
+INSERT INTO tbEndereco (
+   logradouro, cep, cidade, estado, numeroResidencial, complemento, pais, idCliente)
+VALUES (
+   'Rua das rosa', '12345-677', 'São Paulo', 'SP', '125', 'casa 2 ', 'Brasil', 2);
+
+
+
+-- Inserir uma categoria
+INSERT INTO tbCategoria (nomeCategoria)
+VALUES ('Roupas');
+
+
+
+-- Inserir um produto
+INSERT INTO tbProduto (nomeProduto, descProduto, idCategoria, quantProduto, valorProduto)
+VALUES ('Camiseta', 'Camiseta de algodão', 1, 100, 49.90);
+
+-- Inserir pedido para o cliente
+INSERT INTO tbPedido (idCliente, idEndereco)
+VALUES (1, 1);
+
+-- Inserir item do pedido
+INSERT INTO tbItemPedido (idPedido, idProduto, quantidade, precoUnitario)
+VALUES (1, 1, 2, 49.90);
+GO
+
+
+
+-- Verificar se o idProduto = 1 existe
+SELECT * FROM tbProduto WHERE idProduto = 1;
+
+-- Verificar se o idCliente = 1 existe
+SELECT * FROM tbCliente WHERE idCliente = 1;
+
+-- Verificar se o idEndereco = 1 existe
+SELECT * FROM tbEndereco WHERE idEndereco =2;
+
+SELECT * FROM tbEndereco;
+SELECT c.idCliente, c.nomeCliente, e.idEndereco, e.logradouro, e.cidade
+FROM tbCliente c
+INNER JOIN tbEndereco e ON c.idCliente = e.idCliente
+WHERE c.idCliente = 1; 
+
+
+WITH CTE AS (
+   SELECT 
+      idEndereco,
+      ROW_NUMBER() OVER (PARTITION BY idCliente ORDER BY idEndereco) AS rn
+   FROM tbEndereco
+)
+DELETE FROM CTE WHERE rn > 1;
+
+
+DBCC CHECKIDENT ('tbEndereco', RESEED, 1);
+
+
+
+
+
+
